@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>רמב״ם</title>
+		<link rel="icon" href="icon.jpg">
+		<style>
+			* {
+				box-sizing: border-box;
+				font-family: "sbl hebrew", Arial, sans-serif;
+			}
+
+			body {
+				margin: 0;
+				direction: rtl;
+				padding: 0;
+			}
+
+			header {
+				position: sticky;
+				top: 0;
+				height: 150px;
+				background: #4a2a90;
+				background-image: url('design.svg');
+				color: #fff;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+				padding: 5px;
+				z-index: 100;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			header.small {
+				height: 75px;
+			}
+
+			.container {
+				max-width: 1200px;
+				margin: 0 auto;
+			}
+
+			.flex-container {
+				 display: flex;
+				 flex-wrap: wrap;
+				 justify-content: center;
+				 align-items: center;
+			}
+            
+			.btn-grid {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
+				margin-top: 50px;
+				margin-bottom: 50px;
+			}
+
+
+			.btn {
+				display: flex;
+				background-color: #F9F9F9;
+				padding: 25px;
+				text-align: center;
+				font-size: 20px;
+				align-items: center;
+				justify-content: center;
+				color: #333;
+				border-radius: 10px;
+				text-decoration: none;
+				transition: background-color 0.2s ease-out;
+				width: 225px;
+				height: 80px;
+			}
+
+			.btn:hover {
+				background-color: #421f90;
+				color: #fff;
+				font-family: "david", sans-serif;
+				font-size: 25px;
+			}
+
+			.btn:active {
+				background-color: #8f4aff;
+				font-family: "sbl hebrew", sans-serif;
+				font-size: 20px;
+			}
+
+			.subheader {
+				font-size: 24px;
+				font-weight: bold;
+				margin-top: 50px;
+				margin-bottom: 20px;
+				color: #000;
+				text-align: center;
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				line-height: 1.2;
+			}
+			.background {
+				background-image: url('from chabad.orgnew.svg');
+				background-color: transparent;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="flex-container">
+			<h1><strong>רמב״ם</strong></h1>
+            </div>
+		</header>
+		<div class="container">
+				<div class="subheader">ספר הפלאה</div>
+				<div class="btn-grid">
+				<a href="61n.htm" class="btn">הלכות שבועות</a>
+				<a href="62n.htm" class="btn">הלכות נדרים</a>
+				<a href="63n.htm" class="btn">הלכות נזירות</a>
+				<a href="64n.htm" class="btn">הלכות ערכים וחרמים</a>
+			</div>
+		</div>
+	</body>
+</html>
