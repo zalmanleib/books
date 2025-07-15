@@ -4,6 +4,7 @@
        url('dyslexia-hebrew-extended.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  unicode-range: U+0590-05FF;
 }
 body {
   font-family: 'DyslexiaHebrew', 'david', 'Times New Roman';
