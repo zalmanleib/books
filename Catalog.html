@@ -1,3 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Book Catalog Form</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fb;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; margin: 0; padding: 30px;
+  }
+  .card {
+    background: #fff; width: 100%; max-width: 640px;
+    padding: 28px 32px; border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+  }
+  h1 { margin: 0 0 8px; font-size: 1.6rem; color: #222; text-align: center; }
+  p.sub { margin: 0 0 20px; color: #666; text-align: center; }
+  label { display: block; margin: 16px 0 6px; font-weight: 600; color: #333; }
+  input[type="text"], textarea {
+    width: 100%; padding: 12px 14px; font-size: 15px;
+    border: 1px solid #d5dbe3; border-radius: 8px;
+    outline: none; transition: border .2s, box-shadow .2s;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: #4285f4; box-shadow: 0 0 0 3px rgba(66,133,244,.2);
+  }
+  textarea { resize: vertical; }
+  .inline {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 8px;
+  }
+  .inline label { margin: 0; font-weight: 500; }
+  .inline input[type="radio"] { transform: scale(1.1); margin-right: 6px; }
+  button {
+    margin-top: 22px; width: 100%; padding: 13px 16px; font-size: 16px; font-weight: 700;
+    color: #fff; background: #4285f4; border: 0; border-radius: 10px; cursor: pointer;
+    transition: background .15s, transform .05s;
+  }
+  button:hover { background: #3367d6; }
+  button:active { transform: scale(.99); }
+  button:disabled { background: #bbb; cursor: not-allowed; }
+  #thankyou {
+    margin-top: 16px;
+    text-align: center;
+    font-weight: 600;
+    color: green;
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Add Books</h1>
+
+    <form id="gform">
+      <label for="name">Name <span style="color:#c62828">*</span></label>
+      <input id="name" name="entry.717144083" type="text" placeholder="Book name" required />
+
+      <label>From Rabbeim</label>
+      <div class="inline">
+        <label><input type="radio" name="entry.437345322" value="Yes"> Yes</label>
+        <label><input type="radio" name="entry.437345322" value="No"> No</label>
+      </div>
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="entry.1477282278" rows="3" placeholder="Optional notes..."></textarea>
+
+      <button id="submitBtn" type="submit">Submit</button>
+    </form>
+
+    <div id="thankyou">Submitted</div>
+  </div>
+
 <script>
-  window.location.href = "https://script.google.com/macros/s/AKfycbz-vc5JJya-Kk4O6WedpE6xui2f162nrsW7_g-mmsacQEICNM0_fcaWqCJfykT-54wLqg/exec";
+const form = document.getElementById("gform");
+const btn  = document.getElementById("submitBtn");
+const msg  = document.getElementById("thankyou");
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  btn.disabled = true;
+  msg.style.display = "none";
+
+  const data = new FormData(form);
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLScyNluHCFmI5odGrf91V3gMKkGhJTXhqRJETVYQDalU11Y7Ow/formResponse", {
+    method: "POST",
+    mode: "no-cors",
+    body: data
+  }).then(() => {
+    msg.style.display = "block";      // show success
+    form.reset();                     // clear fields
+    btn.disabled = false;             // re-enable submit
+    setTimeout(() => { msg.style.display = "none"; }, 2000); // auto-hide message
+  }).catch(err => {
+    alert("Something went wrong: " + err.message);
+    btn.disabled = false;
+  });
+});
 </script>
+</body>
+</html>
