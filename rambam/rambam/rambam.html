@@ -1,0 +1,163 @@
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>רמב״ם לעם</title>
+  <link rel="icon" href="icon.jpg">
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: url('https://www.ethanallen.com/on/demandware.static/-/Sites-main/default/dw26aa8ce4/images/large_gray/WQ1247A.jpg') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .shelf {
+    display: flex;
+    flex-direction: row;
+    gap: 0px;
+  }
+
+  .book {
+    flex: 0 0 auto;
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+  }
+
+  .book a {
+    display: block;
+    text-decoration: none;
+  }
+
+  .book object {
+    display: block;
+    height: 500px;
+    width: auto;
+    cursor: pointer;
+    transition: transform 0.2s;
+    pointer-events: none; /* <--- allows the link to work */
+  }
+
+  .book:hover object {
+    transform: scale(.95);
+  }
+
+  /* spine shadow that scales with the book */
+  .book::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.25) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(0, 0, 0, 0.15) 100%
+    );
+    pointer-events: none;
+    transform-origin: center center;
+    transition: transform 0.2s;
+  }
+
+  .book:hover::after {
+    transform: scale(.95);
+  }
+</style>
+</head>
+<body>
+  <div class="shelf" dir="rtl">
+
+    <div class="book">
+      <a href="book.html">
+        <object type="image/svg+xml" data="book.svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 1.html">
+        <object type="image/svg+xml" data="book (1).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 2.html">
+        <object type="image/svg+xml" data="book (2).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 3.html">
+        <object type="image/svg+xml" data="book (3).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 3.html">
+        <object type="image/svg+xml" data="book (4).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 4.html">
+        <object type="image/svg+xml" data="book (5).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 5.html">
+        <object type="image/svg+xml" data="book (6).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 6.html">
+        <object type="image/svg+xml" data="book (7).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 7.html">
+        <object type="image/svg+xml" data="book (8).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 8.html">
+        <object type="image/svg+xml" data="book (9).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 9.html">
+        <object type="image/svg+xml" data="book (10).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 10.html">
+        <object type="image/svg+xml" data="book (11).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 10.html">
+        <object type="image/svg+xml" data="book (12).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 11.html">
+        <object type="image/svg+xml" data="book (13).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 12.html">
+        <object type="image/svg+xml" data="book (14).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 13.html">
+        <object type="image/svg+xml" data="book (15).svg"></object>
+      </a>
+    </div>
+    <div class="book">
+      <a href="book 14.html">
+        <object type="image/svg+xml" data="book (16).svg"></object>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
