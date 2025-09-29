@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Morah Shiur — Rambam Daily</title>
+  <style>
+    body{margin:0;font-family:sans-serif;background:#0f172a;color:#f5f5f5;display:flex;align-items:center;justify-content:center;padding:10px}
+    .container{max-width:900px;width:100%;background:#1e293b;border-radius:10px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,0.5)}
+    header h1{margin:0 0 10px;text-align:center}
+    .controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;justify-content:center}
+    input,button{padding:6px 10px;border-radius:6px;border:none}
+    input{background:#334155;color:#f5f5f5}
+    button{cursor:pointer;background:#4c1d95;color:white}
+    iframe{width:100%;height:600px;border:0;border-radius:6px;background:white;display:none}
+    #popup {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center;
+    }
+    #popup div {
+      background:#1e293b; padding:20px; border-radius:8px; max-width:400px; text-align:center;
+      box-shadow:0 6px 20px rgba(0,0,0,0.6);
+    }
+    #popup button { margin-top:12px; background:#2563eb; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Morah Shiur — Rambam Daily</h1>
+  </header>
+
+  <div class="controls">
+    <label>Date: <input type="date" id="pickDate"></label>
+    <button onclick="showPdf('echod')">Perek Echad</button>
+    <button onclick="showPdf('shlosha')">Shlosha Perakim</button>
+    <button id="prevBtn">← Prev</button>
+    <button id="todayBtn">Today</button>
+    <button id="nextBtn">Next →</button>
+    <button id="toggleViewerBtn">Change Viewer</button>
+    <button id="fullscreenBtn">Open Fullscreen</button>
+  </div>
+
+  <iframe id="pdfFrame"></iframe>
+</div>
+
+<!-- Popup message -->
+<div id="popup">
+  <div>
+    <h2>Welcome!</h2>
+    <p>Use the date and cycle buttons to learn Rambam daily.<br><br>
+    If the PDF does not display properly, click <b>Change Viewer</b> to try another option.</p>
+    <button onclick="closePopup()">Got it</button>
+  </div>
+</div>
+
+<script>
+    let startDateShlosha = new Date("1984-04-28");
+    let startDateEchod = new Date("1984-04-28");
+
+    let baseUrlShlosha = "https://s3.amazonaws.com/DvarMalchus/rambam/3/";
+    let maxShlosha = 339;
+
+    let baseUrlEchod = "https://s3.amazonaws.com/DvarMalchus/rambam/1/";
+    let maxEchod = 1017;
+
+    let usePdfJs = false; // default viewer is direct PDF
+
+    function getCycleDay(startDate, today, maxDays) {
+        let diffTime = today - startDate;
+        let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        return (diffDays % maxDays) + 1;
+    }
+
+    function showPdf(cycleType) {
+        let today = document.getElementById("pickDate").value ? new Date(document.getElementById("pickDate").value) : new Date();
+        let url;
+        if (cycleType === "shlosha") {
+            let day = getCycleDay(startDateShlosha, today, maxShlosha);
+            url = baseUrlShlosha + day + ".pdf";
+        } else {
+            let day = getCycleDay(startDateEchod, today, maxEchod);
+            url = baseUrlEchod + day + ".pdf";
+        }
+
+        let viewerUrl;
+        if (usePdfJs) {
+            viewerUrl = "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(url);
+        } else {
+            viewerUrl = url; // direct
+        }
+
+        let frame = document.getElementById("pdfFrame");
+        frame.style.display = "block";
+        frame.src = viewerUrl;
+
+        document.getElementById("fullscreenBtn").onclick = function () {
+            window.open(viewerUrl, "_blank");
+        };
+    }
+
+    // Toggle between viewers
+    document.getElementById("toggleViewerBtn").onclick = function () {
+        usePdfJs = !usePdfJs;
+        alert("Viewer changed to: " + (usePdfJs ? "Alternative (PDF.js)" : "Default (Browser PDF)"));
+    };
+
+    // Popup close
+    function closePopup() {
+        document.getElementById("popup").style.display = "none";
+    }
+
+    // Default date to today
+    document.getElementById("pickDate").valueAsDate = new Date();
+</script>
+</body>
+</html>
