@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Morah Shiur – Rambam</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      text-align: center;
+    }
+    #pdf-viewer {
+      width: 100%;
+      height: 90vh;
+      border: none;
+      margin-top: 20px;
+      display: none;
+    }
+    .cycle-buttons button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .cycle-buttons button.active {
+      background-color: #007bff;
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Morah Shiur – Rambam</h1>
+  <label for="date">Pick a Date:</label>
+  <input type="date" id="date" value="1984-04-28">
+
+  <div class="cycle-buttons">
+    <button onclick="setCycle(1)">Perek Echad</button>
+    <button onclick="setCycle(3)">Shlosha Perakim</button>
+  </div>
+
+  <iframe id="pdf-viewer"></iframe>
+
+  <script>
+    const startDate = new Date("1984-04-28");
+    let cycle = null;
+
+    function setCycle(num) {
+      cycle = num;
+      document.querySelectorAll('.cycle-buttons button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      updatePDF();
+    }
+
+    document.getElementById('date').addEventListener('change', updatePDF);
+
+    function updatePDF() {
+      if (!cycle) return;
+      const pickedDate = new Date(document.getElementById('date').value);
+      const diffDays = Math.floor((pickedDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+      let baseUrl;
+      if (cycle === 1) {
+        if (diffDays < 1 || diffDays > 1017) return;
+        baseUrl = `https://s3.amazonaws.com/DvarMalchus/rambam/1/${diffDays}.pdf`;
+      } else if (cycle === 3) {
+        if (diffDays < 1 || diffDays > 339) return;
+        baseUrl = `https://s3.amazonaws.com/DvarMalchus/rambam/3/${diffDays}.pdf`;
+      }
+
+      const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(baseUrl)}&embedded=true`;
+      document.getElementById('pdf-viewer').src = viewerUrl;
+      document.getElementById('pdf-viewer').style.display = "block";
+    }
+  </script>
+</body>
+</html>
