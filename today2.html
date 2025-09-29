@@ -88,6 +88,7 @@
   const pdfFrame = document.getElementById("pdfFrame");
   let currentCycle = null;
   let currentUrl = "";
+  let currentViewerUrl = "";
 
   function parseDate(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
   function diffDays(a,b){ return Math.floor((a-b)/(1000*60*60*24)); }
@@ -101,8 +102,8 @@
     const len=lengths[currentCycle];
     const d=computeDay(len,startDate,dateStr);
     currentUrl=bases[currentCycle]+d+".pdf";
-    // use Google Docs Viewer instead of direct PDF
-    pdfFrame.src="https://docs.google.com/gview?url="+encodeURIComponent(currentUrl)+"&embedded=true";
+    currentViewerUrl="https://docs.google.com/gview?url="+encodeURIComponent(currentUrl)+"&embedded=true";
+    pdfFrame.src=currentViewerUrl;
     pdfFrame.style.display="block";
   }
 
@@ -118,7 +119,7 @@
 
   document.getElementById("cycle1").onclick=()=>{currentCycle="1";update(pickDate.value)};
   document.getElementById("cycle3").onclick=()=>{currentCycle="3";update(pickDate.value)};
-  document.getElementById("openTabBtn").onclick=()=>{ if(currentUrl) window.open(currentUrl,"_blank"); };
+  document.getElementById("openTabBtn").onclick=()=>{ if(currentViewerUrl) window.open(currentViewerUrl,"_blank"); };
 
   // init with today's date
   pickDate.value=new Date().toISOString().slice(0,10);
