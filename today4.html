@@ -32,8 +32,8 @@
 
   <div class="controls">
     <label>Date: <input type="date" id="pickDate"></label>
-    <button onclick="showPdf('echod')">Perek Echad</button>
-    <button onclick="showPdf('shlosha')">Shlosha Perakim</button>
+    <button id="cycle1">Perek Echad</button>
+    <button id="cycle3">Shlosha Perakim</button>
     <button id="prevBtn">← Prev</button>
     <button id="todayBtn">Today</button>
     <button id="nextBtn">Next →</button>
@@ -55,63 +55,85 @@
 </div>
 
 <script>
-    let startDateShlosha = new Date("1984-04-28");
-    let startDateEchod = new Date("1984-04-28");
+    const startDateShlosha = new Date("1984-04-28");
+    const startDateEchod = new Date("1984-04-28");
+    const baseUrlShlosha = "https://s3.amazonaws.com/DvarMalchus/rambam/3/";
+    const baseUrlEchod = "https://s3.amazonaws.com/DvarMalchus/rambam/1/";
+    const maxShlosha = 339, maxEchod = 1017;
 
-    let baseUrlShlosha = "https://s3.amazonaws.com/DvarMalchus/rambam/3/";
-    let maxShlosha = 339;
+    let usePdfJs = false; // default viewer
+    let currentCycle = null; // "echod" or "shlosha"
 
-    let baseUrlEchod = "https://s3.amazonaws.com/DvarMalchus/rambam/1/";
-    let maxEchod = 1017;
+    const dateInput = document.getElementById("pickDate");
+    const pdfFrame = document.getElementById("pdfFrame");
 
-    let usePdfJs = false; // default viewer is direct PDF
-
-    function getCycleDay(startDate, today, maxDays) {
-        let diffTime = today - startDate;
-        let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    function getCycleDay(startDate, targetDate, maxDays) {
+        const diffTime = targetDate - startDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         return (diffDays % maxDays) + 1;
     }
 
     function showPdf(cycleType) {
-        let today = document.getElementById("pickDate").value ? new Date(document.getElementById("pickDate").value) : new Date();
-        let url;
+        if (!cycleType) return;
+        currentCycle = cycleType;
+
+        const selectedDate = new Date(dateInput.value || new Date());
+        let url, day;
+
         if (cycleType === "shlosha") {
-            let day = getCycleDay(startDateShlosha, today, maxShlosha);
+            day = getCycleDay(startDateShlosha, selectedDate, maxShlosha);
             url = baseUrlShlosha + day + ".pdf";
         } else {
-            let day = getCycleDay(startDateEchod, today, maxEchod);
+            day = getCycleDay(startDateEchod, selectedDate, maxEchod);
             url = baseUrlEchod + day + ".pdf";
         }
 
-        let viewerUrl;
-        if (usePdfJs) {
-            viewerUrl = "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(url);
-        } else {
-            viewerUrl = url; // direct
-        }
+        const viewerUrl = usePdfJs
+          ? "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(url)
+          : url;
 
-        let frame = document.getElementById("pdfFrame");
-        frame.style.display = "block";
-        frame.src = viewerUrl;
+        pdfFrame.style.display = "block";
+        pdfFrame.src = viewerUrl;
 
-        document.getElementById("fullscreenBtn").onclick = function () {
+        document.getElementById("fullscreenBtn").onclick = () => {
             window.open(viewerUrl, "_blank");
         };
     }
 
-    // Toggle between viewers
-    document.getElementById("toggleViewerBtn").onclick = function () {
-        usePdfJs = !usePdfJs;
-        alert("Viewer changed to: " + (usePdfJs ? "Alternative (PDF.js)" : "Default (Browser PDF)"));
+    // Button handlers
+    document.getElementById("cycle1").onclick = () => showPdf("echod");
+    document.getElementById("cycle3").onclick = () => showPdf("shlosha");
+
+    document.getElementById("todayBtn").onclick = () => {
+        dateInput.valueAsDate = new Date();
+        if (currentCycle) showPdf(currentCycle);
+    };
+    document.getElementById("prevBtn").onclick = () => {
+        let d = new Date(dateInput.value);
+        d.setDate(d.getDate() - 1);
+        dateInput.valueAsDate = d;
+        if (currentCycle) showPdf(currentCycle);
+    };
+    document.getElementById("nextBtn").onclick = () => {
+        let d = new Date(dateInput.value);
+        d.setDate(d.getDate() + 1);
+        dateInput.valueAsDate = d;
+        if (currentCycle) showPdf(currentCycle);
     };
 
-    // Popup close
+    // Toggle viewer
+    document.getElementById("toggleViewerBtn").onclick = () => {
+        usePdfJs = !usePdfJs;
+        alert("Viewer changed to: " + (usePdfJs ? "Alternative (PDF.js)" : "Default (Browser PDF)"));
+        if (currentCycle) showPdf(currentCycle); // refresh immediately
+    };
+
     function closePopup() {
         document.getElementById("popup").style.display = "none";
     }
 
-    // Default date to today
-    document.getElementById("pickDate").valueAsDate = new Date();
+    // Default to today’s date
+    dateInput.valueAsDate = new Date();
 </script>
 </body>
 </html>
