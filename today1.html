@@ -23,12 +23,12 @@
 
   <div class="controls">
     <label>Date: <input type="date" id="pickDate"></label>
-    <button id="cycle1">Perek Echad</button>
-    <button id="cycle3">Shlosha Perakim</button>
+    <button onclick="showPdf('echod')">Perek Echad</button>
+    <button onclick="showPdf('shlosha')">Shlosha Perakim</button>
     <button id="prevBtn">← Prev</button>
     <button id="todayBtn">Today</button>
     <button id="nextBtn">Next →</button>
-    <button id="openTabBtn">Open Fullscreen</button>
+    <button id="fullscreenBtn">Open Fullscreen</button>
   </div>
 
   <!-- PDF.js viewer iframe -->
@@ -36,52 +36,43 @@
 </div>
 
 <script>
-(function(){
-  const startDate = "1984-04-28"; // hidden baseline Day 1
-  const lengths = { "3":339, "1":1017 };
-  const bases   = { "3":"https://s3.amazonaws.com/DvarMalchus/rambam/3/",
-                    "1":"https://s3.amazonaws.com/DvarMalchus/rambam/1/" };
+    let startDateShlosha = new Date("1984-04-28");
+    let startDateEchod = new Date("1984-04-28");
 
-  const pickDate = document.getElementById("pickDate");
-  const pdfFrame = document.getElementById("pdfFrame");
-  let currentCycle = null;
-  let currentUrl = "";
+    let baseUrlShlosha = "https://s3.amazonaws.com/DvarMalchus/rambam/3/";
+    let maxShlosha = 339;
 
-  function parseDate(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
-  function diffDays(a,b){ return Math.floor((a-b)/(1000*60*60*24)); }
-  function computeDay(len,startStr,selStr){
-    const start=parseDate(startStr), sel=parseDate(selStr);
-    const diff=diffDays(sel,start);
-    return ((diff%len)+len)%len + 1;
-  }
-  function update(dateStr){
-    if(!currentCycle){ pdfFrame.style.display="none"; return; }
-    const len=lengths[currentCycle];
-    const d=computeDay(len,startDate,dateStr);
-    currentUrl=bases[currentCycle]+d+".pdf";
-    // use PDF.js universal viewer
-    pdfFrame.src = "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(currentUrl);
-    pdfFrame.style.display="block";
-  }
+    let baseUrlEchod = "https://s3.amazonaws.com/DvarMalchus/rambam/1/";
+    let maxEchod = 1017;
 
-  // controls
-  document.getElementById("todayBtn").onclick=()=>{pickDate.value=new Date().toISOString().slice(0,10);update(pickDate.value)};
-  document.getElementById("prevBtn").onclick=()=>{
-    let d=parseDate(pickDate.value);d.setDate(d.getDate()-1);pickDate.value=d.toISOString().slice(0,10);update(pickDate.value);
-  };
-  document.getElementById("nextBtn").onclick=()=>{
-    let d=parseDate(pickDate.value);d.setDate(d.getDate()+1);pickDate.value=d.toISOString().slice(0,10);update(pickDate.value);
-  };
-  pickDate.onchange=()=>update(pickDate.value);
+    function getCycleDay(startDate, today, maxDays) {
+        let diffTime = today - startDate;
+        let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        return (diffDays % maxDays) + 1;
+    }
 
-  document.getElementById("cycle1").onclick=()=>{currentCycle="1";update(pickDate.value)};
-  document.getElementById("cycle3").onclick=()=>{currentCycle="3";update(pickDate.value)};
-  document.getElementById("openTabBtn").onclick=()=>{ if(currentUrl) window.open(currentUrl,"_blank"); };
+    function showPdf(cycleType) {
+        let today = new Date();
+        let url;
+        if (cycleType === "shlosha") {
+            let day = getCycleDay(startDateShlosha, today, maxShlosha);
+            url = baseUrlShlosha + day + ".pdf";
+        } else {
+            let day = getCycleDay(startDateEchod, today, maxEchod);
+            url = baseUrlEchod + day + ".pdf";
+        }
 
-  // init
-  pickDate.value=new Date().toISOString().slice(0,10);
-  pdfFrame.style.display="none";
-})();
+        // Wrap with PDF.js viewer
+        let pdfJsUrl = "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(url);
+
+        let frame = document.getElementById("pdfFrame");
+        frame.style.display = "block";
+        frame.src = pdfJsUrl;
+
+        document.getElementById("fullscreenBtn").onclick = function () {
+            window.open(pdfJsUrl, "_blank");
+        };
+    }
 </script>
 </body>
 </html>
