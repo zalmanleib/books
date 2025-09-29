@@ -1,136 +1,150 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Rambam Viewer</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Morah Shiur — Rambam Daily</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #f4f4f4;
+      margin:0;
+      font-family:sans-serif;
+      background:#0f172a;
+      color:#f5f5f5;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
     }
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 15px;
-      width: 100%;
-      text-align: center;
-      font-size: 1.5em;
+    .container {
+      max-width:900px;
+      width:100%;
+      background:#1e293b;
+      border-radius:10px;
+      padding:16px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.5);
     }
-    main {
-      margin: 20px;
-      text-align: center;
+    header h1 {
+      margin:0 0 10px;
+      text-align:center;
+    }
+    .controls {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:12px;
+      justify-content:center;
+    }
+    input,button {
+      padding:6px 10px;
+      border-radius:6px;
+      border:none;
+    }
+    input {
+      background:#334155;
+      color:#f5f5f5;
     }
     button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 1em;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-      background: #3498db;
-      color: white;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #2980b9;
+      cursor:pointer;
+      background:#4c1d95;
+      color:white;
     }
     iframe {
-      width: 90%;
-      height: 80vh;
-      border: none;
-      margin-top: 20px;
-      background: white;
+      width:100%;
+      height:600px;
+      border:0;
+      border-radius:6px;
+      background:white;
+      display:none;
     }
   </style>
 </head>
 <body>
-  <header>Daily Rambam Viewer</header>
-  <main>
-    <div>
-      <button onclick="setCycle(1)">Perek Echad</button>
-      <button onclick="setCycle(3)">Shlosha Perakim</button>
-    </div>
-    <div>
-      <button onclick="prevDay()">Previous</button>
-      <button onclick="today()">Today</button>
-      <button onclick="nextDay()">Next</button>
-    </div>
-    <div>
-      <button onclick="changeViewer()">Change Viewer</button>
-    </div>
-    <iframe id="pdfFrame"></iframe>
-  </main>
+<div class="container">
+  <header>
+    <h1>Morah Shiur — Rambam Daily</h1>
+  </header>
 
-  <script>
-    const pdfFrame = document.getElementById("pdfFrame");
+  <div class="controls">
+    <label>Date: <input type="date" id="pickDate"></label>
+    <button id="cycle1">Perek Echad</button>
+    <button id="cycle3">Shlosha Perakim</button>
+    <button id="prevBtn">← Prev</button>
+    <button id="todayBtn">Today</button>
+    <button id="nextBtn">Next →</button>
+    <button id="viewerBtn">Change Viewer</button>
+    <button id="openTabBtn">Open Fullscreen</button>
+  </div>
 
-    const viewers = [
-      (url) => url,
-      (url) => `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(url)}`,
-      (url) => `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`
-    ];
-    let currentViewerIndex = 0;
+  <iframe id="pdfFrame"></iframe>
+</div>
 
-    let cycle = null;
-    let startDate = new Date("2024-09-29"); 
-    let currentDay = 0;
+<script>
+  // Start dates
+  const startDateEchod = new Date("1984-04-28");
+  const startDateShlosha = new Date("1984-04-28");
 
-    function setCycle(type) {
-      cycle = type;
-      updateDayFromToday();
+  // Cycle data
+  const cycles = {
+    echod: { base:"https://s3.amazonaws.com/DvarMalchus/rambam/1/", max:1017, start:startDateEchod },
+    shlosha: { base:"https://s3.amazonaws.com/DvarMalchus/rambam/3/", max:339, start:startDateShlosha }
+  };
+
+  let currentCycle = null;
+  let currentDate = new Date();
+  let viewerMode = 0; // 0=regular, 1=Google Drive, 2=PDF.js
+
+  const pdfFrame = document.getElementById("pdfFrame");
+  const pickDate = document.getElementById("pickDate");
+
+  // Format date to yyyy-mm-dd
+  function formatDate(d) {
+    return d.toISOString().split("T")[0];
+  }
+
+  // Set date picker to today initially
+  pickDate.value = formatDate(currentDate);
+
+  function getCycleDay(startDate, date, maxDays) {
+    const diffTime = date - startDate;
+    const diffDays = Math.floor(diffTime / (1000*60*60*24));
+    return (diffDays % maxDays) + 1;
+  }
+
+  function buildUrl(cycle, date) {
+    const day = getCycleDay(cycle.start, date, cycle.max);
+    const fileUrl = cycle.base + day + ".pdf";
+    if (viewerMode === 1) {
+      return "https://docs.google.com/gview?embedded=true&url=" + encodeURIComponent(fileUrl);
+    } else if (viewerMode === 2) {
+      return "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(fileUrl);
+    } else {
+      return fileUrl;
     }
+  }
 
-    function updateDayFromToday() {
-      const todayDate = new Date();
-      const diffTime = todayDate - startDate;
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      currentDay = diffDays;
-      updatePdf();
-    }
+  function updatePdf() {
+    if (!currentCycle) return;
+    pickDate.value = formatDate(currentDate); // keep picker synced
+    const url = buildUrl(cycles[currentCycle], currentDate);
+    pdfFrame.src = url;
+    pdfFrame.style.display = "block";
+    document.getElementById("openTabBtn").onclick = () => window.open(url, "_blank");
+  }
 
-    function buildUrl() {
-      if (!cycle) return "";
-      let base = "https://s3.amazonaws.com/DvarMalchus/rambam/1/";
-      let num = (cycle === 1 ? currentDay + 1 : (currentDay + 1) * 3);
-      return `${base}${num}.pdf`;
-    }
+  // Event listeners
+  document.getElementById("cycle1").onclick = () => { currentCycle="echod"; currentDate=new Date(); updatePdf(); };
+  document.getElementById("cycle3").onclick = () => { currentCycle="shlosha"; currentDate=new Date(); updatePdf(); };
 
-    function updatePdf() {
-      const url = buildUrl();
-      if (!url) return;
-      pdfFrame.src = viewers[currentViewerIndex](url);
-    }
+  document.getElementById("prevBtn").onclick = () => { if (currentCycle){ currentDate.setDate(currentDate.getDate()-1); updatePdf(); } };
+  document.getElementById("nextBtn").onclick = () => { if (currentCycle){ currentDate.setDate(currentDate.getDate()+1); updatePdf(); } };
+  document.getElementById("todayBtn").onclick = () => { if (currentCycle){ currentDate=new Date(); updatePdf(); } };
 
-    function prevDay() {
-      if (cycle && currentDay > 0) {
-        currentDay--;
-        updatePdf();
-      }
-    }
+  pickDate.onchange = () => { if (currentCycle){ currentDate=new Date(pickDate.value); updatePdf(); } };
 
-    function nextDay() {
-      if (cycle) {
-        currentDay++;
-        updatePdf();
-      }
-    }
-
-    function today() {
-      if (cycle) {
-        updateDayFromToday();
-      }
-    }
-
-    function changeViewer() {
-      currentViewerIndex = (currentViewerIndex + 1) % viewers.length;
-      updatePdf();
-    }
-  </script>
+  document.getElementById("viewerBtn").onclick = () => {
+    viewerMode = (viewerMode+1)%3;
+    updatePdf();
+  };
+</script>
 </body>
 </html>
