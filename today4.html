@@ -1,139 +1,136 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Morah Shiur — Rambam Daily</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Rambam Viewer</title>
   <style>
-    body{margin:0;font-family:sans-serif;background:#0f172a;color:#f5f5f5;display:flex;align-items:center;justify-content:center;padding:10px}
-    .container{max-width:900px;width:100%;background:#1e293b;border-radius:10px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,0.5)}
-    header h1{margin:0 0 10px;text-align:center}
-    .controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;justify-content:center}
-    input,button{padding:6px 10px;border-radius:6px;border:none}
-    input{background:#334155;color:#f5f5f5}
-    button{cursor:pointer;background:#4c1d95;color:white}
-    iframe{width:100%;height:600px;border:0;border-radius:6px;background:white;display:none}
-    #popup {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f4f4f4;
     }
-    #popup div {
-      background:#1e293b; padding:20px; border-radius:8px; max-width:400px; text-align:center;
-      box-shadow:0 6px 20px rgba(0,0,0,0.6);
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 15px;
+      width: 100%;
+      text-align: center;
+      font-size: 1.5em;
     }
-    #popup button { margin-top:12px; background:#2563eb; }
+    main {
+      margin: 20px;
+      text-align: center;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: #3498db;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    iframe {
+      width: 90%;
+      height: 80vh;
+      border: none;
+      margin-top: 20px;
+      background: white;
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>Morah Shiur — Rambam Daily</h1>
-  </header>
+  <header>Daily Rambam Viewer</header>
+  <main>
+    <div>
+      <button onclick="setCycle(1)">Perek Echad</button>
+      <button onclick="setCycle(3)">Shlosha Perakim</button>
+    </div>
+    <div>
+      <button onclick="prevDay()">Previous</button>
+      <button onclick="today()">Today</button>
+      <button onclick="nextDay()">Next</button>
+    </div>
+    <div>
+      <button onclick="changeViewer()">Change Viewer</button>
+    </div>
+    <iframe id="pdfFrame"></iframe>
+  </main>
 
-  <div class="controls">
-    <label>Date: <input type="date" id="pickDate"></label>
-    <button id="cycle1">Perek Echad</button>
-    <button id="cycle3">Shlosha Perakim</button>
-    <button id="prevBtn">← Prev</button>
-    <button id="todayBtn">Today</button>
-    <button id="nextBtn">Next →</button>
-    <button id="toggleViewerBtn">Change Viewer</button>
-    <button id="fullscreenBtn">Open Fullscreen</button>
-  </div>
-
-  <iframe id="pdfFrame"></iframe>
-</div>
-
-<!-- Popup message -->
-<div id="popup">
-  <div>
-    <h2>Welcome!</h2>
-    <p>Use the date and cycle buttons to learn Rambam daily.<br><br>
-    If the PDF does not display properly, click <b>Change Viewer</b> to try another option.</p>
-    <button onclick="closePopup()">Got it</button>
-  </div>
-</div>
-
-<script>
-    const startDateShlosha = new Date("1984-04-28");
-    const startDateEchod = new Date("1984-04-28");
-    const baseUrlShlosha = "https://s3.amazonaws.com/DvarMalchus/rambam/3/";
-    const baseUrlEchod = "https://s3.amazonaws.com/DvarMalchus/rambam/1/";
-    const maxShlosha = 339, maxEchod = 1017;
-
-    let usePdfJs = false; // default viewer
-    let currentCycle = null; // "echod" or "shlosha"
-
-    const dateInput = document.getElementById("pickDate");
+  <script>
     const pdfFrame = document.getElementById("pdfFrame");
 
-    function getCycleDay(startDate, targetDate, maxDays) {
-        const diffTime = targetDate - startDate;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        return (diffDays % maxDays) + 1;
+    const viewers = [
+      (url) => url,
+      (url) => `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(url)}`,
+      (url) => `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`
+    ];
+    let currentViewerIndex = 0;
+
+    let cycle = null;
+    let startDate = new Date("2024-09-29"); 
+    let currentDay = 0;
+
+    function setCycle(type) {
+      cycle = type;
+      updateDayFromToday();
     }
 
-    function showPdf(cycleType) {
-        if (!cycleType) return;
-        currentCycle = cycleType;
-
-        const selectedDate = new Date(dateInput.value || new Date());
-        let url, day;
-
-        if (cycleType === "shlosha") {
-            day = getCycleDay(startDateShlosha, selectedDate, maxShlosha);
-            url = baseUrlShlosha + day + ".pdf";
-        } else {
-            day = getCycleDay(startDateEchod, selectedDate, maxEchod);
-            url = baseUrlEchod + day + ".pdf";
-        }
-
-        const viewerUrl = usePdfJs
-          ? "https://mozilla.github.io/pdf.js/web/viewer.html?file=" + encodeURIComponent(url)
-          : url;
-
-        pdfFrame.style.display = "block";
-        pdfFrame.src = viewerUrl;
-
-        document.getElementById("fullscreenBtn").onclick = () => {
-            window.open(viewerUrl, "_blank");
-        };
+    function updateDayFromToday() {
+      const todayDate = new Date();
+      const diffTime = todayDate - startDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      currentDay = diffDays;
+      updatePdf();
     }
 
-    // Button handlers
-    document.getElementById("cycle1").onclick = () => showPdf("echod");
-    document.getElementById("cycle3").onclick = () => showPdf("shlosha");
-
-    document.getElementById("todayBtn").onclick = () => {
-        dateInput.valueAsDate = new Date();
-        if (currentCycle) showPdf(currentCycle);
-    };
-    document.getElementById("prevBtn").onclick = () => {
-        let d = new Date(dateInput.value);
-        d.setDate(d.getDate() - 1);
-        dateInput.valueAsDate = d;
-        if (currentCycle) showPdf(currentCycle);
-    };
-    document.getElementById("nextBtn").onclick = () => {
-        let d = new Date(dateInput.value);
-        d.setDate(d.getDate() + 1);
-        dateInput.valueAsDate = d;
-        if (currentCycle) showPdf(currentCycle);
-    };
-
-    // Toggle viewer
-    document.getElementById("toggleViewerBtn").onclick = () => {
-        usePdfJs = !usePdfJs;
-        alert("Viewer changed to: " + (usePdfJs ? "Alternative (PDF.js)" : "Default (Browser PDF)"));
-        if (currentCycle) showPdf(currentCycle); // refresh immediately
-    };
-
-    function closePopup() {
-        document.getElementById("popup").style.display = "none";
+    function buildUrl() {
+      if (!cycle) return "";
+      let base = "https://s3.amazonaws.com/DvarMalchus/rambam/1/";
+      let num = (cycle === 1 ? currentDay + 1 : (currentDay + 1) * 3);
+      return `${base}${num}.pdf`;
     }
 
-    // Default to today’s date
-    dateInput.valueAsDate = new Date();
-</script>
+    function updatePdf() {
+      const url = buildUrl();
+      if (!url) return;
+      pdfFrame.src = viewers[currentViewerIndex](url);
+    }
+
+    function prevDay() {
+      if (cycle && currentDay > 0) {
+        currentDay--;
+        updatePdf();
+      }
+    }
+
+    function nextDay() {
+      if (cycle) {
+        currentDay++;
+        updatePdf();
+      }
+    }
+
+    function today() {
+      if (cycle) {
+        updateDayFromToday();
+      }
+    }
+
+    function changeViewer() {
+      currentViewerIndex = (currentViewerIndex + 1) % viewers.length;
+      updatePdf();
+    }
+  </script>
 </body>
 </html>
