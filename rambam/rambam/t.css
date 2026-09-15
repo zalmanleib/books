@@ -1,18 +1,4 @@
-@font-face {
-  font-family: 'DyslexiaHebrew';
-  src: url('dyslexia-hebrew-extended-webfont.woff2') format('woff2'),
-       url('dyslexia-hebrew-extended-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-body {
-  font-family: 'DyslexiaHebrew', 'david', 'Times New Roman';
-  color: #262523;
-  background-color: #f5eee0;
-  margin: 1.5em;
-  font-weight: regular;
-  zoom: 250%;
-}
+body {font-family: "SBL Hebrew", 'david', 'Times New Roman';color: #262523;background-color: #f5eee0;margin: 1.5em;font-weight: regular;zoom: 250%;}
 p {font-size: 165%;text-align: justify;font-weight: regular;}
 p.r {font-size: 165%;text-align: right;font-weight: regular;}
 p.m {font-size: 120%;text-align: justify;font-weight: regular;}
